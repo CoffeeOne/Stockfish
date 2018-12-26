@@ -138,8 +138,7 @@ const string engine_info(bool to_uci) {
   ss << (Is64Bit ? " 64" : "")
      << (HasPext ? " BMI2" : (HasPopCnt ? " POPCNT" : ""))
      << (to_uci  ? "\nid author ": " by ")
-     << "T. Romstad, M. Costalba, J. Kiiski, G. Linscott, M. Goi"
-     << "\n\nhttps://chess.massimilianogoi.com\n\n";
+     << "T. Romstad, M. Costalba, J. Kiiski, G. Linscott";
 
   return ss.str();
 }
