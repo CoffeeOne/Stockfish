@@ -23,6 +23,7 @@
 
 #include "misc.h"
 #include "types.h"
+#include <unordered_map>
 
 /// TTEntry struct is the 10 bytes transposition table entry, defined as below:
 ///
@@ -97,6 +98,54 @@ private:
   void* mem;
   uint8_t generation8; // Size must be not bigger than TTEntry::genBound8
 };
+
+struct ExpEntry
+{
+	uint64_t hashkey;
+	Depth depth;
+	Value score;
+	Move move;
+};
+
+void EXPresize();
+void EXPawnresize();
+void startposition();
+void EXPload(char* fen);
+
+extern TranspositionTable EXP;
+
+
+void EXPresize();
+void EXPawnresize();
+void startposition();
+void EXPload(char* fen);
+void mctsInsert(ExpEntry tempExpEntry);
+
+const int MAX_CHILDREN = 25;
+
+struct Child
+{
+	Move move;
+	Depth depth;
+	Value score;
+	int visits;
+};
+
+struct NodeInfo
+{
+	Key hashkey;
+	Child child[20];
+	Child lateChild;
+	int sons;
+	int totalVisits;
+};
+
+typedef NodeInfo* Node;
+Node get_node(Key key);
+// The Monte-Carlo tree is stored implicitly in one big hash table
+typedef std::unordered_multimap<Key, NodeInfo> MCTSHashTable;
+
+extern MCTSHashTable MCTS;
 
 extern TranspositionTable TT;
 

@@ -47,33 +47,73 @@ namespace {
   // The function sets up the position described in the given FEN string ("fen")
   // or the starting position ("startpos") and then makes the moves given in the
   // following move list ("moves").
+  bool startposition = false;
+  Key FileKey = 0;
 
   void position(Position& pos, istringstream& is, StateListPtr& states) {
 
     Move m;
     string token, fen;
-
+    string Newfen; 
     is >> token;
 
     if (token == "startpos")
     {
-        fen = StartFEN;
-        is >> token; // Consume "moves" token if any
+      //kellykynyama mcts begin
+	  startposition = true;
+      fen = StartFEN;
+	  Newfen = fen;
+      is >> token; // Consume "moves" token if any
     }
     else if (token == "fen")
-        while (is >> token && token != "moves")
-            fen += token + " ";
+    {
+		startposition = false;
+		Newfen = token;
+      	while (is >> token && token != "moves")
+	      fen += token + " ";
+    }
     else
-        return;
+	    return;
 
     states = StateListPtr(new std::deque<StateInfo>(1)); // Drop old and create a new one
     pos.set(fen, Options["UCI_Chess960"], &states->back(), Threads.main());
+    int movesplayed = 0;
+    int OPmoves = 0;
+	if (StartFEN != Newfen)
+	  {
+	      startposition = false;
+	      FileKey = pos.key();
+	  }
+	  else
+	  {
+	      startposition = true;
+	      FileKey = 0;
+	  }
+    
 
     // Parse move list (if any)
     while (is >> token && (m = UCI::to_move(pos, token)) != MOVE_NONE)
     {
         states->emplace_back();
+
+	  if (!FileKey)
+	  {
+	    if ((movesplayed == 2 || movesplayed == 4 || movesplayed == 6 || movesplayed == 8 || movesplayed == 10 || movesplayed == 12 || movesplayed == 14 || movesplayed == 16) && Newfen == StartFEN)
+	    {
+		    files(OPmoves, pos.key());
+		    OPmoves++;
+		    kelly(startposition);
+
+	    }
+	    if (movesplayed == 16 && Newfen == StartFEN)
+	    {
+		    FileKey = pos.key();
+		    kelly(startposition);
+	    }
+	  }
+
         pos.do_move(m, states->back());
+        movesplayed++;
     }
   }
 
